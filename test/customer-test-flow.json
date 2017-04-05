@@ -1,0 +1,309 @@
+{
+  "config": {
+    "target": "http://localhost:8080",
+    "processor": "./processor.js",
+    "phases": [
+      {"duration": 2, "arrivalCount": 1000}
+    ],
+    "payload": [
+    {
+      "path": "UserData.csv",
+      "fields": ["fname","lname","address","city","state","zip","email","username","password"],
+      "order": "sequence"
+    },
+    {
+      "path": "Portfolio.csv",
+      "fields": ["name","symbol","initial_value"],
+      "order": "sequence"
+    }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "web service task self-generated test plan",
+      "flow": [
+        {"post": {
+          "url": "/login",
+          "json": {"username":"{{{username}}}","password":"{{password}}"},
+          "match":{
+            "json":"$.message",
+            "value":"Welcome {{{fname}}}"
+          }
+         }
+       },
+       {"post": {
+           "url": "/createCustomerAccount",
+           "json": {"fname":"{{{fname}}}", "lname":"{{lname}}", "address":"{{{address}}}","city":"{{{city}}}","state":"{{{state}}}", "zip":"{{{zip}}}", "email":"{{{email}}}","cash":"0","username":"{{{username}}}","password":"{{password}}"},
+           "match":{
+             "json":"$.message",
+             "value":"You must be an employee to perform this action"
+           }
+          }
+        },
+        {"post": {
+        "url": "/depositCheck",
+        "json": {"username":"{{{username}}}", "cash":"1000.00"},
+        "match":{
+          "json":"$.message",
+          "value":"You must be an employee to perform this action"
+        }
+       }
+      },
+      {"post": {
+        "url": "/createFund",
+        "json": {"name":"{{{name}}}", "symbol":"{{{symbol}}}", "initial_value":"{{{initial_value}}}"},
+        "match":{
+          "json":"$.message",
+          "value":"You must be an employee to perform this action"
+           }
+         }
+       },
+       {"post": {
+        "url": "/transitionDay",
+        "match":{
+          "json":"$.message",
+          "value":"You must be an employee to perform this action"
+           }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"","cashValue":"{{{initial_value}}}"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":""},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"","cashValue":""},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":"0"},
+          "match":{
+            "json":"$.message",
+            "value":"You didn't provide enough cash to make this purchase"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":"-18.00"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":"nonnumber"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":"{{{initial_value}}}"},
+          "match":{
+            "json":"$.message",
+            "value":"The fund has been successfully purchased"
+          }
+         }
+       },
+       {"get": {
+          "url": "/viewPortfolio",
+          "afterResponse": "parsePortfolio",
+          "match":[
+            {
+              "json":"$.message",
+              "value":"The action was successful"
+            },
+            {
+              "json":"$.$shares['{{{name}}}']",
+              "value":"1"
+            },
+            {
+              "json":"$.$price['{{{name}}}']",
+              "value":"{{{initial_value}}}"
+            }
+          ]
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":"0.05"},
+          "match":{
+            "json":"$.message",
+            "value":"You didn't provide enough cash to make this purchase"
+          }
+         }
+       },
+       {"post": {
+          "url": "/buyFund",
+          "json": {"symbol":"{{{symbol}}}","cashValue":"2000"},
+          "match":{
+            "json":"$.message",
+            "value":"You don't have enough cash in your account to make this purchase"
+          }
+         }
+       },
+       {"post": {
+          "url": "/requestCheck",
+          "json": {"cashValue":"199.99"},
+          "match":{
+            "json":"$.message",
+            "value":"The check has been successfully requested"
+          }
+         }
+       },
+       {"post": {
+          "url": "/requestCheck",
+          "json": {"cashValue":"0"},
+          "match":{
+            "json":"$.message",
+            "value":"The check has been successfully requested"
+          }
+         }
+       },
+       {"post": {
+          "url": "/requestCheck",
+          "json": {"cashValue":"-100.01"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/requestCheck",
+          "json": {"cashValue":"nonnumber"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/requestCheck",
+          "json": {"cashValue":"2000"},
+          "match":{
+            "json":"$.message",
+            "value":"You don't have sufficient funds in your account to cover the requested check"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"","numShares":"1"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":""},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"","numShares":""},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":"-1"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":"nonnumber"},
+          "match":{
+            "json":"$.message",
+            "value":"The input you provided is not valid"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":"2"},
+          "match":{
+            "json":"$.message",
+            "value":"You don't have that many shares in your portfolio"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":"1"},
+          "match":{
+            "json":"$.message",
+            "value":"The shares have been successfully sold"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":"0"},
+          "match":{
+            "json":"$.message",
+            "value":"The shares have been successfully sold"
+          }
+         }
+       },
+       {"post": {
+          "url": "/sellFund",
+          "json": {"symbol":"{{{symbol}}}","numShares":"1"},
+          "match":{
+            "json":"$.message",
+            "value":"You don't have that many shares in your portfolio"
+          }
+         }
+       },
+       {"get": {
+          "url": "/viewPortfolio",
+          "afterResponse": "parsePortfolio",
+          "match":[
+            {
+              "json":"$.message",
+              "value":"You don't have any funds in your Portfolio"
+            }
+          ]
+         }
+       }
+     ]
+    }
+  ]
+}
